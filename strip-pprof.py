@@ -39,9 +39,9 @@ __description__ = 'Remove headers from pprof file'
 def setup_options():
     parser = argparse.ArgumentParser(description=__description__)
     parser.add_argument('-i', '--input', dest="input", metavar="FILE",
-                        help="input file")
+                        help="input file, if filename is - read from stdin")
     parser.add_argument('-o', '--output', dest="output", metavar="FILE",
-                        help="output file")
+                        help="output file, if filename is - write to stdout")
     return parser.parse_args()
 
 
