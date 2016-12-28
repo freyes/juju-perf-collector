@@ -12,3 +12,4 @@ the following metrics can be captured:
   report's filename is `$REPORT_NAME.%Y%m%d_%H%M%S`. For more details about
   the content of each report see
   https://github.com/juju/juju/wiki/pprof-facility
+* `strip-pprof.py`: Remove (HTTP) headers from a pprof report
