@@ -24,15 +24,18 @@
 
 import argparse
 import gzip
+import json
 import os
 import sys
 import subprocess
 import threading
 import time
 import yaml
+from datetime import datetime
 from queue import Queue, Empty  # python 3.x
 
 
+TS_FMT = "%Y-%m-%dT%H:%M:%S"
 MONGOSTAT = "/usr/lib/juju/mongo3.2/bin/mongostat"
 
 if not os.path.exists(MONGOSTAT):
@@ -102,8 +105,13 @@ def main():
                 # no output yet
                 pass
             else:
-                sys.stdout.write(bytes.decode(line))
-                report.write(line)
+                str_line = bytes.decode(line)
+                sys.stdout.write(str_line)
+                item = json.loads(str_line)
+                ts = datetime.utcnow().strftime(TS_FMT)
+                for k in item:
+                    item[k]['ts'] = ts
+                report.write(str.encode(json.dumps(item) + '\n'))
 
             if opts.timeout > 0 and (time.time() - start > opts.timeout):
                 # we have to exit
