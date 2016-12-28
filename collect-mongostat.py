@@ -93,22 +93,27 @@ def main():
     t.start()
 
     start = time.time()
-    while True:
-        # read line without blocking
-        try:
-            line = q.get_nowait()
-        except Empty:
-            # no output yet
-            pass
-        else:
-            sys.stdout.write(bytes.decode(line))
-            report.write(line)
+    try:
+        while True:
+            # read line without blocking
+            try:
+                line = q.get_nowait()
+            except Empty:
+                # no output yet
+                pass
+            else:
+                sys.stdout.write(bytes.decode(line))
+                report.write(line)
 
-        if opts.timeout > 0 and (time.time() - start > opts.timeout):
-            # we have to exit
-            print('Reached timeout, exiting')
-            sys.exit(0)
-        time.sleep(opts.interval)
+            if opts.timeout > 0 and (time.time() - start > opts.timeout):
+                # we have to exit
+                print('Reached timeout, exiting')
+                sys.exit(0)
+            time.sleep(opts.interval)
+    except KeyboardInterrupt:
+        pass
+    finally:
+        report.close()
 
 
 if __name__ == "__main__":
