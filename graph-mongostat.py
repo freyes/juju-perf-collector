@@ -1,4 +1,4 @@
-#!/usr/bin/python
+#!/usr/bin/python3
 # Copyright 2016 Felipe Reyes <felipe.reyes@canonical.com>
 #
 # This program is free software: you can redistribute it and/or modify
@@ -17,8 +17,13 @@ import argparse
 import gzip
 import json
 import os
+
+import matplotlib
+matplotlib.use('GTK3Cairo')
+
 import matplotlib.pyplot as plt
 import matplotlib.dates as mdates
+from collections import defaultdict
 from matplotlib.ticker import FuncFormatter
 import humanfriendly
 
@@ -59,35 +64,85 @@ def main():
 
         for host in item:
             if host not in matrix:
-                matrix[host] = {'ts': [], 'vsize': [], 'res': []}
+                matrix[host] = defaultdict(list)
 
             # we assume the file contains the timestamp in order
             matrix[host]['ts'].append(dt_formatter(item[host]['ts']))
-            matrix[host]['vsize'].append(
-                humanfriendly.parse_size(item[host]['vsize']))
-            matrix[host]['res'].append(
-                humanfriendly.parse_size(item[host]['res']))
 
-    i = 0
+            # memory and net IO
+            for k in ['vsize', 'res', 'netIn', 'netOut']:
+                matrix[host][k].append(
+                    humanfriendly.parse_size(item[host][k]))
+
+            # queries and connections
+            for k in ['query', 'update', 'delete', 'insert', 'conn']:
+                matrix[host][k].append(int(item[host][k].replace('*', '')))
+
     size_formatter = FuncFormatter(lambda y, pos: humanfriendly.format_size(y))
 
     for key in matrix:
+
+        # graph memory
         fig, ax = plt.subplots()
         ax.plot_date(x=matrix[key]['ts'],
-                     y=matrix[key]['vsize'], fmt='-', fillstyle='full')
+                     y=matrix[key]['vsize'], color='red', fmt='-',
+                     label='Virtual')
         ax.fill_between(matrix[key]['ts'], matrix[key]['vsize'], color='red')
-        i += 1
         ax.format_xdata = mdates.DateFormatter('%Y-%m-%d %H:%M')
         ax.set_ylabel("Virtual Memory")
         ax.grid(True)
+        ax.title.set_text('MongoDB Memory')
         yaxis = ax.get_yaxis()
         yaxis.set_major_formatter(size_formatter)
 
         ax.plot_date(x=matrix[key]['ts'],
-                     y=matrix[key]['res'], fmt='-')
+                     y=matrix[key]['res'], fmt='-', color='green',
+                     label='Resident')
         ax.fill_between(matrix[key]['ts'], matrix[key]['res'], color='green')
+        ax.legend(loc='upper center', bbox_to_anchor=(0.5, -0.15),
+                  fancybox=True, shadow=True, ncol=5)
 
         fig.autofmt_xdate()
+
+        # graph queries
+        fig, ax = plt.subplots()
+        for k, color, label in [('query', 'blue', 'Queries'),
+                                ('update', 'yellow', 'Updates'),
+                                ('delete', 'red', 'Deletes'),
+                                ('insert', 'green', 'Inserts')]:
+            ax.plot_date(x=matrix[key]['ts'],
+                         y=matrix[key][k],
+                         fmt='-', color=color, label=label)
+
+        ax.format_xdata = mdates.DateFormatter('%Y-%m-%d %H:%M')
+        ax.title.set_text('MongoDB Queries')
+        ax.legend(loc='upper center', bbox_to_anchor=(0.5, -0.05),
+                  fancybox=True, shadow=True, ncol=5)
+
+        # connections
+        fig, ax = plt.subplots()
+        ax.plot_date(x=matrix[key]['ts'],
+                     y=matrix[key]['conn'], fmt='-', color='green',
+                     label='Connections')
+        ax.format_xdata = mdates.DateFormatter('%Y-%m-%d %H:%M')
+        ax.title.set_text('MongoDB Connections')
+        ax.legend(loc='upper center', bbox_to_anchor=(0.5, -0.05),
+                  fancybox=True, shadow=True, ncol=5)
+
+        # network IO
+        fig, ax = plt.subplots()
+        for k, color, label in [('netIn', 'blue', 'in'),
+                                ('netOut', 'green', 'out')]:
+            ax.plot_date(x=matrix[key]['ts'],
+                         y=matrix[key][k],
+                         fmt='-', color=color, label=label)
+
+        yaxis = ax.get_yaxis()
+        yaxis.set_major_formatter(size_formatter)
+        ax.title.set_text('MongoDB Network IO')
+        ax.format_xdata = mdates.DateFormatter('%Y-%m-%d %H:%M')
+        ax.legend(loc='upper center', bbox_to_anchor=(0.5, -0.05),
+                  fancybox=True, shadow=True, ncol=5)
 
     plt.show()
 

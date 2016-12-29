@@ -13,3 +13,16 @@ the following metrics can be captured:
   the content of each report see
   https://github.com/juju/juju/wiki/pprof-facility
 * `strip-pprof.py`: Remove (HTTP) headers from a pprof report
+* `graph-mongostat.py`: generate `matplotlib` based graphs of captured
+  mongostat output.
+
+
+## Graph Mongostat
+
+![MongoDB Memory](examples/figure_1.png)
+
+![MongoDB Queries](examples/figure_2.png)
+
+![MongoDB Connections](examples/figure_3.png)
+
+![MongoDB Network IO](examples/figure_4.png)
