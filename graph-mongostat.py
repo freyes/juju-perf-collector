@@ -81,6 +81,7 @@ def main():
                 matrix[host][k].append(int(item[host][k].replace('*', '')))
 
     size_formatter = FuncFormatter(lambda y, pos: humanfriendly.format_size(y))
+    ts_formatter = mdates.DateFormatter('%Y-%m-%d %H:%M')
 
     for key in matrix:
 
@@ -90,7 +91,7 @@ def main():
                      y=matrix[key]['vsize'], color='red', fmt='-',
                      label='Virtual')
         ax.fill_between(matrix[key]['ts'], matrix[key]['vsize'], color='red')
-        ax.format_xdata = mdates.DateFormatter('%Y-%m-%d %H:%M')
+        ax.fmt_xdata = ts_formatter
         ax.set_ylabel("Virtual Memory")
         ax.grid(True)
         ax.title.set_text('MongoDB Memory')
@@ -116,20 +117,22 @@ def main():
                          y=matrix[key][k],
                          fmt='-', color=color, label=label)
 
-        ax.format_xdata = mdates.DateFormatter('%Y-%m-%d %H:%M')
+        ax.fmt_xdata = ts_formatter
         ax.title.set_text('MongoDB Queries')
         ax.legend(loc='upper center', bbox_to_anchor=(0.5, -0.05),
                   fancybox=True, shadow=True, ncol=5)
+        fig.autofmt_xdate()
 
         # connections
         fig, ax = plt.subplots()
         ax.plot_date(x=matrix[key]['ts'],
                      y=matrix[key]['conn'], fmt='-', color='green',
                      label='Connections')
-        ax.format_xdata = mdates.DateFormatter('%Y-%m-%d %H:%M')
+        ax.fmt_xdata = ts_formatter
         ax.title.set_text('MongoDB Connections')
         ax.legend(loc='upper center', bbox_to_anchor=(0.5, -0.05),
                   fancybox=True, shadow=True, ncol=5)
+        fig.autofmt_xdate()
 
         # network IO
         fig, ax = plt.subplots()
@@ -142,9 +145,10 @@ def main():
         yaxis = ax.get_yaxis()
         yaxis.set_major_formatter(size_formatter)
         ax.title.set_text('MongoDB Network IO')
-        ax.format_xdata = mdates.DateFormatter('%Y-%m-%d %H:%M')
+        ax.fmt_xdata = ts_formatter
         ax.legend(loc='upper center', bbox_to_anchor=(0.5, -0.05),
                   fancybox=True, shadow=True, ncol=5)
+        fig.autofmt_xdate()
 
     plt.show()
 
