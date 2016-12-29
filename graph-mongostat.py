@@ -15,17 +15,19 @@
 # along with this program.  If not, see <http://www.gnu.org/licenses/>.
 import argparse
 import gzip
+import humanfriendly
 import json
 import os
-
 import matplotlib
+
+from collections import defaultdict
+
 matplotlib.use('GTK3Cairo')
 
-import matplotlib.pyplot as plt
-import matplotlib.dates as mdates
-from collections import defaultdict
-from matplotlib.ticker import FuncFormatter
-import humanfriendly
+# these modules can't be imported before setting the backend
+import matplotlib.pyplot as plt  # noqa
+import matplotlib.dates as mdates  # noqa
+from matplotlib.ticker import FuncFormatter  # noqa
 
 
 __description__ = 'Graph mongostat'
